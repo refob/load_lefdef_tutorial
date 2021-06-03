@@ -1,0 +1,68 @@
+# See EDI System User Guide - Importing and Exporting Designs
+
+DIEAREA		ALL		100	0
+#COMP		ALL		101	0
+
+metal1		NET		49	0
+metal1		SPNET		49	0
+metal1		PIN		81	0
+NAME		metal1/PIN	81	0
+metal1		LEFPIN		81	0
+NAME		metal1/LEFPIN	109	0
+metal1		LEFOBS		49	5
+
+via		VIA		50	0
+via		LEFOBS		50	5
+
+metal2		NET		51	0
+metal2		SPNET		51	0
+metal2		PIN		82	0
+NAME		metal2/PIN	82	0
+metal2		LEFPIN		82	0
+NAME		metal2/LEFPIN	109	0
+metal2		LEFOBS		51	5
+
+via2		VIA		61	0
+via2		LEFOBS		61	5
+
+metal3		NET		62	0
+metal3		SPNET		62	0
+metal3		PIN		83	0
+NAME		metal3/PIN	83	0
+metal3		LEFPIN		83	0
+NAME		metal3/LEFPIN	109	0
+metal3		LEFOBS		62	5
+
+via3		VIA		30	0
+via3		LEFOBS		30	5
+
+metal4		NET		31	0
+metal4		SPNET		31	0
+metal4		PIN		84	0
+NAME		metal4/PIN	84	0
+metal4		LEFPIN		84	0
+NAME		metal4/LEFPIN	109	0
+metal4		LEFOBS		31	5
+
+via4		VIA		32	0
+via4		LEFOBS		32	5
+
+metal5		NET		33	0
+metal5		SPNET		33	0
+metal5		PIN		85	0
+NAME		metal5/PIN	85	0
+metal5		LEFPIN		85	0
+NAME		metal5/LEFPIN	109	0
+metal5		LEFOBS		33	5
+
+via5		VIA		36	0
+via5		LEFOBS		36	5
+
+metal6		NET		37	0
+metal6		SPNET		37	0
+metal6		PIN		86	0
+NAME		metal6/PIN	86	0
+metal6		LEFPIN		86	0
+NAME		metal6/LEFPIN	109	0
+metal6		LEFOBS		37	5
+
