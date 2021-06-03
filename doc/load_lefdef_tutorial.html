@@ -1,0 +1,204 @@
+<html>
+<head>
+</head>
+
+<body>
+<h1>The easy way to load LEF/DEF</h1>
+
+We start with downloding the tutorial data from <a href="https://sami.klayout.org/">KLayout's Salt Mine</a>.
+In KLayout run the command "Tools>Manage Packages". From there please install the package "load_lefdef_tutorial".
+After the installation procedure is finished you will find the tutorial data in the directory 
+~/.klayout/salt/load_lefdef_tutorial in your Linux file system. Please change into that directory and
+continue from there.
+<p>
+The tutorial directory contains several input files that we will use with KLayout. We start with the 
+conversion of Cadence OpenAccess technology data. The set of files consists of an ASCII OpenAccess techology
+file, the display.drf and the OpenAccess GDSII layer map file. First we start KLayout reading the import_tf.rbm
+Ruby code that implements a simple tech converter. We also have to provide a sample GDSII input file 
+otherwise the startup will fail with an "error no view selected". I've prepared a Makefile for you to make
+typing easier - just run "make setup". This will execute the following command:
+<p>
+<pre>
+	klayout -rm input/klayout/import_tf_27012017.rbm input/gds/fifo.gds
+</pre>
+<p>
+Now you should see this KLayout window on your screen:
+<p><img src="init.png" width="100%"><p>
+
+Then we will run the tech converter. Please execute now "File>Import Cadence Techfile". As a result
+you get a window that allows you to define the input technology file for the converter. Please
+select the file "NCSU_Techlib_tsmc02_laydefs.tf" that can be found in the subdirectory "input/oa".
+
+<p><img src="select_cdns_techfile.png" width="80%"><p>
+
+Please note that the technoloy converter will automaticly pick up the the file "display.drf"
+found in the same directory. It will also search for files with the extension ".layermap" and
+if found it will also read it und use it for the conversion. If everything went fine you should
+see this window on your screen:
+
+<p><img src="tech_import.png" width="100%"><p>
+
+The Layers window shows the layer names found in the OA technology file. If a streammap file
+was used then you will also see meaningfull GDSII layer numbers and datatypes. If there was
+no map file then these numbers are just artificially calculated. The layers should also show
+the expected layer pattern that were found in the "display.drf" file.
+<p>
+In the next step we will save a copy of the KLayout layer data. Please run "File>Save Layer Properties"
+and enter "demo.lyp" as output name.
+
+<p><img src="save_layer_props.png" width="80%"><p>
+
+Were are done with this step, so enter now "File>Exit" to terminate this session. You can take a
+look at "demo.lyp" file. It uses XML format and contains all layer relevant data used by KLayout.
+<p>
+From now on we will use this file that you have created. Using your prefered editor please change
+the top of the "Makefile" to point to your new file:
+<p>
+<pre>
+#LAYPROPS=output/df2-0.24.10-1.1.lyp
+#LAYPROPS=output/df2-0.27-0.lyp
+#LAYPROPS=output/oa-0.27-0.lyp
+LAYPROPS=demo.lyp
+</pre>
+<p>
+We will now test the new technology by reading a GDSII example file. Please execute "make gds" in
+your shell window. This will run the command:
+<p>
+<pre>
+	klayout -l demo.lyp input/gds/fifo.gds
+</pre>
+<p>
+If successful you will get this output:
+
+<p><img src="gds1.png" width="100%"><p>
+
+Zoom into the upper left corner using the right mouse button and enter the "1" hotkey to see
+this detail:
+
+<p><img src="gds2.png" width="100%"><p>
+
+With the "*" hotkey you can display the full hierarchy of this layout:
+
+<p><img src="gds3.png" width="100%"><p>
+
+Were done with this example. Please exit KLayout. In the next step we want to display a LEF/DEF-based
+design. Please enter "make lefdef" in your shell window. This will execute this command:
+<p>
+<pre>
+	klayout -l demo.lyp \
+		-rd layermap="../klayout/cmos180.encmap" \
+		-rd leftech="../lef/cmos180.lef" \
+		-rd lefcell="../lef/cmos180osu.lef" \
+		-rd def="input/def/fifo.def" \
+		-rx -rm input/klayout/load_lefdef.rb
+</pre>
+<p>
+The main design file is "input/def/fifo.def". It contains the top level of the design. It useds cell
+definitions that are defined in "cmos180osu.lef". This file is looked up relative to the location of
+the DEF file. We also have to read the LEF techology file called "cmos180.lef". This file contains the
+layer definitions, connectivity informations and basic design rule data in the LEF/DEF space. The Ruby
+code in "load_lefdef.rb" tells KLayout to read the data from the at command level defined variables.
+<p>
+Now we have to take a look at the  "cmos180.encmap" file. The format that the file uses is described in
+the Cadence Encounter System User Guide in the section Importing and Exporting Design. Let's take a look
+at the details here:
+<p>
+<pre>
+DIEAREA		ALL		100	0
+#COMP		ALL		101	0
+
+metal1		NET		49	0
+metal1		SPNET		49	0
+metal1		PIN		81	0
+NAME		metal1/PIN	81	0
+metal1		LEFPIN		81	0
+NAME		metal1/LEFPIN	109	0
+metal1		LEFOBS		49	5
+
+via		VIA		50	0
+via		LEFOBS		50	5
+
+</pre>
+This file maps the LEF/DEF constructs into GDSII layer and datatypes. The "DIEAREA ALL" will put 
+the data into GDSII layer 100 with datatype 0. This layer is already defined in KLayout as layer
+with the name "prBoundary.drawing - 100/0". The lines starting with a layer name do the mapping
+using a function name. NET maps the regular routing shapes and SPNET does it for the special
+routing. PIN defines the layer and datatype for the DEF pins. LEFPIN sets it for the LEF pins.
+LEFOBS defines the layer target for the LEF obstructions. The NAME directive instructs the tool
+to generate a text label either for DEF pins or for LEF pins.
+<p>
+Lines starting with via translate via data. Either for VIA into the target via drawing layer for
+the DEF top level or using LEFOBS as via obstructions shapes for the LEF cell data.
+<p>
+Here is the result after reading the LEF/DEF data:
+
+<p><img src="lefdef1.png" width="100%"><p>
+
+Zoom into the upper left corner using the right mouse button and enter the "1" hotkey to see
+this detail:
+
+<p><img src="lefdef2.png" width="100%"><p>
+
+Enter the hotkey "*" to see the full details of the LEF cells. 
+
+<p><img src="lefdef3.png" width="100%"><p>
+
+Run "File>Setup" and select the topic "Display>Texts". Here enter for "Text Font" Times
+and set the "Standard Text Size" to 0.2. Apply text scaling and also "Show properties".
+Once you click on Apply you will see this result - the user properties containing the 
+DEF net name will show up on the screen.
+
+<p><img src="lefdef4.png" width="100%"><p>
+
+Then run "File>Setup" and select the topic "Display>Cells". Here enter for "Cell Box Color"
+instead of "Auto" the value for "#31" and apply the change. This will give you a result
+simiiar to this one:
+
+<p><img src="lefdef5.png" width="100%"><p>
+
+<p>
+<h1>Use your own technology files</h1>
+
+In case you want to use your own technology files please take a look at these sections:
+<ul>
+  <li><a href="df2klayout.html">How to dump a Cadence DFII technology file</a></li>
+  <li><a href="oa2klayout.html">How to dump a Cadence OpenAccess technology file</a></li>
+</ul>
+
+<p>
+<h1>Copyright Notices</h1>
+
+This concludes my brief LEF/DEF tour. To setup the data that was uses here I assembled 
+the small design using helpfull data from a number of sources. Here you will find the
+list of the authors and also pointers to the websites that published their work. Please
+also note their respective copyright notices:
+<p>
+  <li>Chip (SoC) Design Flows v2.7 at Oklahoma State University
+    <ul>
+      <li>Website: <a href="https://vlsiarch.ecen.okstate.edu/flows/MOSIS_SCMOS/osu_soc_v2.7/">vlsiarch.ecen.okstate.edu</a></li>
+      <li><a href="Copyright.OSU">Copyright OSU</a></li>
+    </ul>
+  </li>
+  <li>NCSU Cadence Design Kit 1.5.1
+    <ul>
+      <li>Website: <a href="https://www.eda.ncsu.edu/wiki/NCSU_CDK">www.eda.ncsu.edu</a></li>
+      <li><a href="Copyright.NCSU_CDK">Copyright NCSU_CDK</a></li>
+    </ul>
+	<li>Synchronous reset fifo with testbench
+    <ul>
+      <li>Website: <a href="https://opencores.org/projects/synchronous_reset_fifo">opencores.org</a></li>
+      <li><a href="Copyright.OpenCores">Copyright Madhumangal Javanthieswaran</a></li>
+    </ul>
+  </li>
+  <li>KLayout Ruby code: import_tf.rbm
+    <ul>
+      <li>Website: <a href="https://www.klayout.de/">www.klayout.de</a></li>
+      <li><a href="Copyright.Matthias_Koefferlein">Copyright Matthias_Köfferlein</a></li>
+    </ul>
+  </li>
+</ul> 
+<p>
+q. e. d.
+<p>
+</body>
+</html>
